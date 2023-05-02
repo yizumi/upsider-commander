@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/yizumi/upsider-commander/apps/backend/models"
-	"github.com/yizumi/upsider-commander/apps/backend/services"
+	"github.com/yizumi/upsider-commander/apps/backend/src/models"
+	"github.com/yizumi/upsider-commander/apps/backend/src/services"
 )
 
 type MemberController struct {
@@ -15,7 +15,7 @@ type MemberController struct {
 }
 
 func NewMemberController(memberService *services.MemberService) *MemberController {
-	return &MemberController{memberservice: memberservice}
+	return &MemberController{memberService: memberService}
 }
 
 func (c *MemberController) CreateMember(w http.ResponseWriter, r *http.Request) {
@@ -24,11 +24,12 @@ func (c *MemberController) CreateMember(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
 
 	member.CreatedAt = time.Now()
 	member.UpdatedAt = time.Now()
 
-	err = c.memberservice.CreateMember(&member)
+	err = c.memberService.CreateMember(&member)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -40,7 +41,7 @@ func (c *MemberController) CreateMember(w http.ResponseWriter, r *http.Request) 
 
 func (c *MemberController) Pong(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	members, err := c.memberservice.ListMembers()
+	members, err := c.memberService.ListMembers()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,4 +55,3 @@ func (c *MemberController) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/members", c.Pong).Methods("GET")
 	r.HandleFunc("/members", c.CreateMember).Methods("POST")
 }
-

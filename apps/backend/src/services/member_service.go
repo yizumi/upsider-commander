@@ -1,8 +1,7 @@
 package services
 
 import (
-	"github.com/yizumi/upsider-commander/apps/backend/controllers"
-	"github.com/yizumi/upsider-commander/apps/backend/models"
+	"github.com/yizumi/upsider-commander/apps/backend/src/models"
 	"gorm.io/gorm"
 )
 

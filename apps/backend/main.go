@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/yizumi/upsider-commander/apps/backend/controllers"
-	"github.com/yizumi/upsider-commander/apps/backend/models"
-	"github.com/yizumi/upsider-commander/apps/backend/services"
+	"github.com/yizumi/upsider-commander/apps/backend/src/controllers"
+	"github.com/yizumi/upsider-commander/apps/backend/src/models"
+	"github.com/yizumi/upsider-commander/apps/backend/src/services"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
