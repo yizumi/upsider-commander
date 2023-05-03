@@ -1,1 +1,5 @@
+# git
+.gitignore
+
+# packages
 node_modules

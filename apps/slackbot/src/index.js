@@ -7,10 +7,8 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-
 // Listen for the 'app_mention' event in a specific channel
 app.event('app_mention', async ({ event, say }) => {
-  // Extract the user's name from the mention text
   const user = await getUserByKey(event.user)
   if (user) {
     await say(`Welcome back, <@{event.user}>!`);
