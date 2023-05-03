@@ -19,3 +19,24 @@ export async function deleteUser(key: string): Promise<null> {
     await database.ref(`/users/${key}`).set(null)
     return (await database.ref(`/users/${key}`).once('value')).val()
 }
+
+export async function findUserByName(organizationKey: string, name: string): Promise<User | null> {
+    // Not really scalable, but it's a small dataset for now
+    const snapshot = await database.ref(`/users`).orderByChild('organizationKey').equalTo(organizationKey).once('value')
+    let user: User | null = null
+    snapshot.forEach((childSnapshot) => {
+        const child = childSnapshot.val()
+        if (child.organizationKey === organizationKey && child.name === name) {
+            user = child
+        }
+    })
+    return user
+}
+
+export default {
+    getUserByKey,
+    createUser,
+    updateUser,
+    deleteUser,
+    findUserByName,
+}

@@ -42,10 +42,20 @@ export async function findPersonaByName(organizationKey: string, name: string): 
     return { ...values[key], key }
 }
 
+export async function getPersonasByOrganizationKey(organizationKey: string): Promise<Persona[]> {
+    const snapshot = await database.ref(`/organizations/${organizationKey}/personas`).once('value')
+    const values = snapshot.val()
+    if (!values) {
+        return []
+    }
+    return Object.keys(values).map(key => ({ ...values[key], key }))
+}
+
 export default {
     createPersona,
     updatePersona,
     getPersonaByKey,
     deletePersona,
     findPersonaByName,
+    getPersonasByOrganizationKey,
 }

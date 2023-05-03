@@ -1,6 +1,9 @@
-import { Interpretation } from '../externals/interpreter/chatgpt';
-import personaStore from '../externals/store/firebase/personaStore';
-import { Persona } from '../models'
+import { Interpretation } from '../externals/interpreter/chatgpt'
+import personaStore from '../externals/store/firebase/personaStore'
+import assignmentStore from '../externals/store/firebase/assignmentStore'
+import userStore from '../externals/store/firebase/userStore'
+import {Persona, User} from '../models'
+import {Assignment} from "../models/assignment";
 
 export default class UpsiderCommander {
     organizationKey: string
@@ -76,7 +79,7 @@ export default class UpsiderCommander {
         if (parsedMessage.error) {
             throw new Error(parsedMessage.error)
         }
-        
+
         const persona = await personaStore.findPersonaByName(this.organizationKey, parsedMessage.name)
 
         if (!persona) {
@@ -84,5 +87,105 @@ export default class UpsiderCommander {
         }
 
         await personaStore.deletePersona(persona.organizationKey, persona.key!)
+    }
+
+    @Interpretation(`Extract the name of persona and user from the following message:
+        ---
+        {message}
+        ---
+        Return the result in the following JSON format:
+        ---
+        {
+            "userName": "{user name}",
+            "personaName": "{persona name}"
+        }
+        ---
+        Persona Name should be one of the following:
+        ---
+        {personaNames}
+        ---   
+        If the name can not be extracted, return an error message in the following JSON format:
+        ---
+        {
+            "error": "{error message}"
+        }
+        ---
+        The error message will be displayed to the user, so make sure it is user friendly using the original language.
+    `, {
+        personaNames: async (...args): Promise<string> => {
+            const user = args[1] as User
+            const personas = await personaStore.getPersonasByOrganizationKey(user.organizationKey)
+            return personas.map(p => p.name).join(', ')
+        }
+    })
+    public async assignPersona(message: string, user: User): Promise<Assignment> {
+        const parsedMessage = JSON.parse(message)
+        if (parsedMessage.error) {
+            throw new Error(parsedMessage.error)
+        }
+
+        const persona = await personaStore.findPersonaByName(this.organizationKey, parsedMessage.personaName)
+
+        if (!persona) {
+            throw new Error(`Persona not found by name ${parsedMessage.personaName}`)
+        }
+
+        const targetUser = await userStore.findUserByName(this.organizationKey, parsedMessage.userName)
+
+        if (!targetUser) {
+            throw new Error(`User not found by name ${parsedMessage.userName}`)
+        }
+
+        const assignment = await assignmentStore.createAssignment({
+            userKey: targetUser.key!,
+            personaKey: persona.key!
+        })
+
+        return assignment
+    }
+
+    @Interpretation(`Extract the name of persona and user from the following message:
+        ---
+        {message}
+        ---
+        Return the result in the following JSON format:
+        ---
+        {
+            "personaName": "{persona name}",
+            "userName": "{user name}"
+        }
+        ---
+        If the name can not be extracted, return an error message in the following JSON format:
+        ---
+        {
+            "error": "{error message}"
+        }
+        ---
+        The error message will be displayed to the user, so make sure it is user friendly using the original language.`, {
+        personaNames: async (...args): Promise<string> => {
+            const user = args[1] as User
+            const personas = await personaStore.getPersonasByOrganizationKey(user.organizationKey)
+            return personas.map(p => p.name).join(", ")
+        }
+    })
+    public async unassignPersona(message: string): Promise<void> {
+        const parsedMessage = JSON.parse(message)
+        if (parsedMessage.error) {
+            throw new Error(parsedMessage.error)
+        }
+
+        const user = await userStore.findUserByName(this.organizationKey, parsedMessage.userName)
+
+        if (!user) {
+            throw new Error(`User not found by name ${parsedMessage.userName}`)
+        }
+
+        const persona = await personaStore.findPersonaByName(this.organizationKey, parsedMessage.personaName)
+
+        if (!persona) {
+            throw new Error(`Persona not found by name ${parsedMessage.personaName}`)
+        }
+
+        await assignmentStore.deleteAssignment(user.key!, persona.key!)
     }
 }
