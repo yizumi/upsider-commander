@@ -7,9 +7,11 @@ export async function deleteOrganization(key: string): Promise<null> {
 }
 
 export async function createOrganization(organization: Organization): Promise<Organization> {
-    const newOrganizationRef = database.ref('/organizations').push()
-    await newOrganizationRef.set(organization)
-    return (await newOrganizationRef.once('value')).val()
+    if (!organization.key) {
+        throw new Error('Organization key is required')
+    }
+    await database.ref(`/organizations/${organization.key}`).set(organization)
+    return (await database.ref(`/organizations/${organization.key}`).once('value')).val()
 }
 
 export async function getOrganizationByKey(key: string): Promise<Organization> {

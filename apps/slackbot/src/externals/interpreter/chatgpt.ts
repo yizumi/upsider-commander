@@ -14,15 +14,14 @@ export function Interpretation(instruction: string, insetProvider?: { [key: stri
             let newInstruction = instruction.replace('{message}', args[0])
             if (insetProvider) {
                 for (const key in insetProvider) {
-                    console.info('Interpreting arguments', JSON.stringify(args))
                     const inset = await insetProvider[key](...args)
                     newInstruction = newInstruction.replace(`{${key}}`, inset)
                 }
             }
-            console.info('Interpretation', newInstruction)
+            console.info('Interpreting message:', newInstruction)
             const result = await interpret(newInstruction)
-            console.info('Finishing interpretation', result)
-            return originalMethod.apply(this, [result, ...args.slice(1)])
+            console.info('Interpreting message:', result)
+            return await originalMethod.apply(this, [result, ...args.slice(1)])
         }
     }
 }
@@ -30,7 +29,7 @@ export function Interpretation(instruction: string, insetProvider?: { [key: stri
 export async function interpret(message: string): Promise<string> {
     try {
         const response = await openai.createChatCompletion({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-3.5-turbo-0301',
             messages: [{
                 role: 'user',
                 content: message,

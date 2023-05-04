@@ -5,17 +5,23 @@ export async function getUserByKey(key: string): Promise<User> {
     return (await database.ref(`/users/${key}`).once('value')).val()
 }
 
-export async function createUser(key: string, user: User): Promise<User> {
-    await database.ref(`users/${key}`).set(user)
-    return (await database.ref(`/users/${key}`).once('value')).val()
+export async function createUser(user: User): Promise<User> {
+    if (!user.key) {
+        throw Error('User must have a key')
+    }
+    await database.ref(`users/${user.key}`).set(user)
+    return (await database.ref(`/users/${user.key}`).once('value')).val()
 }
 
 export async function updateUser(key: string, user: User): Promise<User> {
+    if (!user.key) {
+        throw Error('User must have a key')
+    }
     await database.ref(`/users/${key}`).set(user)
     return (await database.ref(`/users/${key}`).once('value')).val()
 }
 
-export async function deleteUser(key: string): Promise<null> { 
+export async function deleteUser(key: string): Promise<null> {
     await database.ref(`/users/${key}`).set(null)
     return (await database.ref(`/users/${key}`).once('value')).val()
 }
